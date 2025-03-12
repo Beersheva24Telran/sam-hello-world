@@ -21,26 +21,23 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("X-Custom-Header", "application/json");
-        String path = input.getPath();
+        
+        Map<String, String> path = input.getQueryStringParameters();
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
         try {
-            final String pageContents = this.getPageContents("https://checkip.amazonaws.com");
-            String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
-
+            String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", path);
+            if (path == null || path.get("id") == null) {throw new Exception("id parameter must exist");}
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return response
-                    .withBody("{}")
-                    .withStatusCode(500);
+                   .withBody(e.toString())
+                    .withStatusCode(400);
         }
     }
 
-    private String getPageContents(String address) throws IOException{
-       return "kukureku";
-    }
+   
 }
